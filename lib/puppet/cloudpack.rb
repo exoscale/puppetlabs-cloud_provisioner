@@ -1037,9 +1037,12 @@ module Puppet::CloudPack
       # the test pass by preventing Fog from throwing an error when the region
       # option is not expected
       Fog.credential = options[:credentials].to_sym if options[:credentials]
+
+      options[:provider] ||= 'AWS'
       # fog is smart enough to pass options that are set to nil
+      
       Fog::Compute.new(
-        :provider => 'AWS',
+        :provider => options[:provider],
         :region => options[:region],
         :endpoint => options[:endpoint]
       )
