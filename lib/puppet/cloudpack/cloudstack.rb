@@ -17,10 +17,7 @@ module Puppet::CloudPack
     end
 
     def create_connection(options = {})
-      Puppet.notice("Connecting to Cloudstack....")
       connection = Fog::Compute[:Cloudstack]
-      Puppet.notice("Connected.")
-      connection
     end
 
     def list
@@ -44,43 +41,5 @@ module Puppet::CloudPack
       @connection.servers.create(create_options)
     end
 
-
-    def options(to, *which)
-      which.each do |name|
-        send("add_#{name}_option", to)
-      end
-    end
-
-    def add_zone_option(action, with_default = true)
-      action.option '--zone CH2' do
-        summary 'Limit to instances in the specified zone'
-        with_default and default_to { '1128bd56-b4d9-4ac6-a7b9-c715b187ce11' }
-      end
-    end
-
-    def add_provider_option(action, with_default = true)
-       action.option '--provider Cloudstack' do
-        summary 'Fog provider'
-        with_default and default_to { 'Cloudstack' }
-       end
-    end
-
-
-
-    def add_image_option(action)
-      action.option '--image <name>' do
-        summary 'Template to use to create the instance'
-        description <<-EOT
-            The pre-configured operating system image to use when creating this
-            machine instance. 
-        EOT
-        required
-        before_action do |action, args, options|
-      #    if Puppet::CloudPack.create_connection(options).images.get(options[:image]).nil?
-          #if create_connection(options).images.get(options[:image]).nil?
-      #      raise ArgumentError, "Unrecognized image name: #{options[:image]}"
-          end
-        end
-      end
-    end
   end
+end

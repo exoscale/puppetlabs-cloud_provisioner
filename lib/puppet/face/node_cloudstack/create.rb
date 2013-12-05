@@ -23,7 +23,14 @@ Puppet::Face.define :node_cloudstack, '0.0.1' do
         Template id
       EOT
       required
-      # TODO: Add before to check if valid id
+
+      before_action do |action, args, options|
+        cloudstack = Puppet::CloudPack::CloudStack.new(options)
+        if cloudstack.connection.images.get(options[:image_id]).nil?
+         raise ArgumentError, "Unrecognized image id: #{options[:image_id]}"
+        end
+      end
+
     end
 
     option '--zone-id=','-z=' do
@@ -32,7 +39,12 @@ Puppet::Face.define :node_cloudstack, '0.0.1' do
         Zone id
       EOT
       required
-      # TODO: Add before to check if valid id
+      
+      before_action do |action, args, options|
+        if Puppet::CloudPack::CloudStack.new(options).connection.zones.get(options[:zone_id]).nil?
+          raise ArgumentError, "Unrecognized zone id: #{options[:zone_id]}"
+        end
+      end
     end
 
     option '--flavor-id=', '-f=' do
@@ -41,7 +53,13 @@ Puppet::Face.define :node_cloudstack, '0.0.1' do
         Flavor id
       EOT
       required
-      # TODO: Check if valid id
+     
+      before_action do |action, args, options|
+        if Puppet::CloudPack::CloudStack.new(options).connection.flavors.get(options[:flavor_id]).nil?
+          raise ArgumentError, "Unrecognized flavor id: #{options[:flavor_id]}"
+        end
+      end
+      
     end 
       
        
