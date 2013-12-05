@@ -12,19 +12,18 @@ Puppet::Face.define :node_cloudstack, '0.0.1' do
       displays them on the console output.
     EOT
 
-    Puppet::CloudPack::Cloudstack.options(self, :provider)
 
     when_invoked do |options|
-      connection = Puppet::CloudPack.create_connection(options)
-      servers = connection.servers
+      cloudstack = Puppet::CloudPack::CloudStack.new(options)
+      servers = cloudstack.list
       # Convert the Fog object into a simple hash.
       # And return the array to the Faces API for rendering
       hsh = {}
       servers.each do |s|
-        hsh[s.id] = {
-          "id"         => s.id,
-          "state"      => s.state,
-          "keyname"    => s.key_name,
+        hsh[s[:id]] = {
+          "id"         => s[:id],
+          "state"      => s[:state],
+          "keyname"    => s[:key_name],
         }
       end
       hsh
@@ -43,13 +42,11 @@ Puppet::Face.define :node_cloudstack, '0.0.1' do
     examples <<-'EOT'
       List every instance in the US East region:
 
-          $ puppet node_aws list --region=us-east-1
-          i-e8e04588:
-            created_at: Tue Sep 13 01:21:16 UTC 2011
-            dns_name: ec2-184-72-85-208.compute-1.amazonaws.com
-            id: i-e8e04588
-            state: running
+          $ puppet node_cloudstack list 
+             025350d9-cd09-407c-935d-4f68d1ab6940:
+             id: 025350d9-cd09-407c-935d-4f68d1ab6940
+             keyname: mykey
+             state: Stopped
     EOT
-
   end
 end
