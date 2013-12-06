@@ -33,6 +33,14 @@ Puppet::Face.define :node_cloudstack, '0.0.1' do
 
     end
 
+    option '--wait-for-boot', '-w' do
+      default_to { true }
+      summary 'Wait for server to boot'
+      description <<-'EOT'
+        Wait for the server to boot.
+      EOT
+    end
+
     option '--zone-id=','-z=' do
       summary "Zode id"
       description <<-EOT
@@ -59,17 +67,30 @@ Puppet::Face.define :node_cloudstack, '0.0.1' do
           raise ArgumentError, "Unrecognized flavor id: #{options[:flavor_id]}"
         end
       end
-      
     end 
       
+    option '--server-name=','-n=' do
+      summary "Name of the cloudstack instance"
+      description <<-EOT
+        Name of the Cloudstack instance.
+      EOT
+    end
        
     when_invoked do |options|
       cloudstack = Puppet::CloudPack::CloudStack.new(options)
       cloudstack.create(options)
     end
 
-    when_rendering :console do |value|
-      puts value
+    when_rendering :console do |return_value|
+      Puppet.notice "Complete"
+      return_value.map do |server|
+        "#{server[:id]}:\n" <<
+        "  name:      #{server[:name]}\n" <<
+        "  jobid:      #{server["jobid"]}\n" <<
+        "  state:     #{server[:state]}\n" <<
+        "  ip:        #{server[:nics][0]["ipaddress"]}\n" <<
+        "  password:  #{server[:password]}\n"
+      end.join("\n") 
     end
   end
 end

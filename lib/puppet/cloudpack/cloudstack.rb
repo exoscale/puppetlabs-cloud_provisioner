@@ -20,7 +20,7 @@ module Puppet::CloudPack
       connection = Fog::Compute[:Cloudstack]
     end
 
-    def list
+    def list_servers
       servers = @connection.servers
       # Convert the Fog object into a simple hash.
       # And return the array to the Faces API for rendering
@@ -29,7 +29,36 @@ module Puppet::CloudPack
       else
         s = servers.collect {|s| s.attributes}
       end
-      s
+      { :kind => @options[:kind], :servers => s }
+    end
+
+    def list_zones
+      zones = @connection.zones
+      # Convert the Fog object into a simple hash.
+      # And return the array to the Faces API for rendering
+      if zones.empty?
+        z = {}
+      else
+        z = zones.collect {|z| z.attributes}
+      end
+      { :kind => @options[:kind], :zones => z }
+     end
+
+    def list_flavors
+      flavors = @connection.flavors
+      # Convert the Fog object into a simple hash.
+      # And return the array to the Faces API for rendering
+      if flavors.empty?
+        f = {}
+      else
+        f = flavors.collect {|f| f.attributes}
+      end
+      { :kind => @options[:kind], :flavors => f }
+    end
+
+    def list_images
+      images = @connection.list_templates( { :templatefilter => 'executable' } )
+      { :kind =>  @options[:kind], :images => images }
     end
 
     def create(options)
@@ -37,9 +66,27 @@ module Puppet::CloudPack
         :image_id      => options[:image_id],
         :flavor_id     => options[:flavor_id],
         :zone_id       => options[:zone_id],
+        :name          => options[:server_name],
       } 
-      @connection.servers.create(create_options)
+      server = @connection.servers.create(create_options)
+
+      # We cannot upload the SSH public key until the Rackspace
+      # Cloud Server is fully booted.
+      if @options[:public_key] | @options[:wait_for_boot]
+        Puppet.notice "Waiting for server to boot ..."
+        server.wait_for { ready? }
+      end
+      if @options[:public_key]
+        Puppet.notice "Adding SSH public key ..."
+        server.setup(:password => server.password)
+      end
+
+      # TODO: Retrieve password from job. jobresult = @connection.jobs.get(server.attributes["jobid"]);
+      [{:status => 'success' }.merge(server.attributes)]
+
     end
+
+    
 
   end
 end
