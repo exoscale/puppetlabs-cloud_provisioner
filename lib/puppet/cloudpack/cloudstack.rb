@@ -70,15 +70,9 @@ module Puppet::CloudPack
       } 
       server = @connection.servers.create(create_options)
 
-      # We cannot upload the SSH public key until the Rackspace
-      # Cloud Server is fully booted.
-      if @options[:public_key] | @options[:wait_for_boot]
+      if @options[:wait_for_boot]
         Puppet.notice "Waiting for server to boot ..."
         server.wait_for { ready? }
-      end
-      if @options[:public_key]
-        Puppet.notice "Adding SSH public key ..."
-        server.setup(:password => server.password)
       end
 
       # TODO: Retrieve password from job. jobresult = @connection.jobs.get(server.attributes["jobid"]);

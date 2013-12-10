@@ -4,17 +4,21 @@ require 'puppet/face/node_cloudstack'
 
 Puppet::Face.define :node_cloudstack, '0.0.1' do
   action :create do
-    summary 'Create a new Cloudstack nstance.'
+    summary 'Create a new Cloudstack instance.'
     description <<-EOT
-      This action launches a new Cloudstack instance and returns the public
-      DNS name suitable for SSH access.
+      This action launches a new Cloudstack instance
 
-      A newly created system may not be immediately ready after launch while
-      it boots. You can use the `fingerprint` action to wait for the system to
-      become ready after launch.
-
-      If creation of the instance fails, Puppet will automatically clean up
+      TODO: If creation of the instance fails, Puppet will automatically clean up
       after itself and tear down the instance.
+      TODO: Retrieve password from jobresult
+
+    EOT
+
+    examples <<-EOT
+        $ puppet node_cloudstack create 
+            --image-id 3b7c19b2-858a-4e31-807f-801eccdc324a 
+            --flavor-id 71004023-bb72-4a97-b1e9-bc66dfce9470 
+            --zone-id 1128bd56-b4d9-4ac6-a7b9-c715b187ce11
     EOT
 
     option '--image-id=', '-i=' do
@@ -33,7 +37,7 @@ Puppet::Face.define :node_cloudstack, '0.0.1' do
 
     end
 
-    option '--wait-for-boot', '-w' do
+    option '--[no-]wait-for-boot', '-w' do
       default_to { true }
       summary 'Wait for server to boot'
       description <<-'EOT'
@@ -83,7 +87,11 @@ Puppet::Face.define :node_cloudstack, '0.0.1' do
 
     when_rendering :console do |return_value|
       Puppet.notice "Complete"
+      puts return_value
       return_value.map do |server|
+        if server[:nics].nil?
+          server[:nics]=[{"ipaddress" => '' }]
+        end
         "#{server[:id]}:\n" <<
         "  name:      #{server[:name]}\n" <<
         "  jobid:      #{server["jobid"]}\n" <<

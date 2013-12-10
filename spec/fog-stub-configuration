@@ -3,3 +3,4 @@
   :aws_secret_access_key: dummy
   :cloudstack_api_key: dummy
   :cloudstack_secret_access_key: dummy
+  :cloudstack_host: localhost
