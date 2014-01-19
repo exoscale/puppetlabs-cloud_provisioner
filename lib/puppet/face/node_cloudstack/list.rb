@@ -61,7 +61,7 @@ Puppet::Face.define :node_cloudstack, '0.0.1' do
        
     end
 
-    returns 'Array of attribute hashes containing information about each EC2 instance.'
+    returns 'Array of attribute hashes containing information about each CloudStack instance.'
 
     examples <<-'EOT'
       List every instance in the US East region:
